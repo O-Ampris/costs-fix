@@ -35,19 +35,19 @@
  */
 
 /**
- * plugin_costs_install
+ * plugin_costsfix_install
  *
  * @return bool
  */
-function plugin_costs_install(): bool
+function plugin_costsfix_install(): bool
 {
-    $migration = new Migration(PLUGIN_COSTS_VERSION);
+    $migration = new Migration(PLUGIN_COSTSFIX_VERSION);
 
     // Parse inc directory
     foreach (glob(dirname(__FILE__) . '/inc/*') as $filepath) {
         // Load *.class.php files and get the class name
         if (preg_match("/inc.(.+)\.class.php/", $filepath, $matches)) {
-            $classname = 'PluginCosts' . ucfirst($matches[1]);
+            $classname = 'PluginCostsfix' . ucfirst($matches[1]);
             include_once($filepath);
             // If the install method exists, load it
             if (method_exists($classname, 'install')) {
@@ -59,19 +59,19 @@ function plugin_costs_install(): bool
 }
 
 /**
- * plugin_costs_uninstall
+ * plugin_costsfix_uninstall
  *
  * @return bool
  */
-function plugin_costs_uninstall(): bool
+function plugin_costsfix_uninstall(): bool
 {
-    $migration = new Migration(PLUGIN_COSTS_VERSION);
+    $migration = new Migration(PLUGIN_COSTSFIX_VERSION);
 
     // Parse inc directory
     foreach (glob(dirname(__FILE__) . '/inc/*') as $filepath) {
         // Load *.class.php files and get the class name
         if (preg_match("/inc.(.+)\.class.php/", $filepath, $matches)) {
-            $classname = 'PluginCosts' . ucfirst($matches[1]);
+            $classname = 'PluginCostsfix' . ucfirst($matches[1]);
             include_once($filepath);
             // If the install method exists, load it
             if (method_exists($classname, 'uninstall')) {
@@ -83,15 +83,15 @@ function plugin_costs_uninstall(): bool
 }
 
 /**
- * plugin_costs_getAddSearchOptions
+ * plugin_costsfix_getAddSearchOptions
  *
  * @param  mixed $itemtype
  * @return array
  */
-function plugin_costs_getAddSearchOptions($itemtype): array
+function plugin_costsfix_getAddSearchOptions($itemtype): array
 {
     if ($itemtype == Ticket::getType()) {
-        return PluginCostsTicket::rawSearchOptionsToAdd();
+        return PluginCostsfixTicket::rawSearchOptionsToAdd();
     }
 
     return [];

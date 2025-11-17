@@ -40,7 +40,7 @@ if(!defined('GLPI_ROOT')) {
     die("Sorry. You can't access directly to this file");
 }
 
-class PluginCostsConfig extends CommonDBTM
+class PluginCostsfixConfig extends CommonDBTM
 {
     public static $rightname = 'config';
 
@@ -111,7 +111,7 @@ class PluginCostsConfig extends CommonDBTM
         $config = self::getInstance();
 
         $plugin = new Plugin();
-        $template = "@costs/config.html.twig";
+        $template = "@costsfix/config.html.twig";
         $template_options = [
             'item'      => $config,
             'credit'    => ($plugin->isInstalled('credit') && $plugin->isActivated('credit')),

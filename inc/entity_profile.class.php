@@ -38,7 +38,7 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access directly to this file");
 }
 
-class PluginCostsEntity_Profile extends CommonDBRelation
+class PluginCostsfixEntity_Profile extends CommonDBRelation
 {
     public static $itemtype_1 = 'Entity';
     public static $items_id_1 = 'entities_id';
@@ -73,11 +73,11 @@ class PluginCostsEntity_Profile extends CommonDBRelation
             echo "</td>";
             echo "<td>" . __('Fixed cost') . "</td>";
             echo "<td>";
-            Dropdown::showNumber('fixed_cost', ['step' => PLUGIN_COSTS_NUMBER_STEP,'rand' => $rand,'toadd' => [0 => Dropdown::EMPTY_VALUE]]);
+            Dropdown::showNumber('fixed_cost', ['step' => PLUGIN_COSTSFIX_NUMBER_STEP,'rand' => $rand,'toadd' => [0 => Dropdown::EMPTY_VALUE]]);
             echo "</td>";
             echo "<td>" . __('Time cost') . "</td>";
             echo "<td>";
-            Dropdown::showNumber('time_cost', ['step' => PLUGIN_COSTS_NUMBER_STEP,'rand' => $rand,'toadd' => [0 => Dropdown::EMPTY_VALUE]]);
+            Dropdown::showNumber('time_cost', ['step' => PLUGIN_COSTSFIX_NUMBER_STEP,'rand' => $rand,'toadd' => [0 => Dropdown::EMPTY_VALUE]]);
             echo "</td>";
             echo "<td class='center'>";
             echo "<input type='submit' name='add' value=\"" . _sx('button', 'Add') . "\" class='submit'>";

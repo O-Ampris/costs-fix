@@ -36,7 +36,7 @@
 
 use Glpi\Application\View\TemplateRenderer;
 
-class PluginCostsTicket extends CommonDBTM
+class PluginCostsfixTicket extends CommonDBTM
 {
     public static $rightname = 'ticket';
 
@@ -129,10 +129,10 @@ class PluginCostsTicket extends CommonDBTM
         } else {
             $ticket = new Ticket();
             $ticket->getFromDB($ticket_id);
-            $cost_config = new PluginCostsEntity();
+            $cost_config = new PluginCostsfixEntity();
             $cost_config->getFromDBByEntity($ticket->fields['entities_id']);
             if ($cost_config->fields['inheritance']) {
-                $parent_id = PluginCostsEntity::getConfigID($ticket->fields['entities_id']);
+                $parent_id = PluginCostsfixEntity::getConfigID($ticket->fields['entities_id']);
                 $cost_config->getFromDB($parent_id);
             }
             $DB->insert(self::getTable(), [
@@ -159,10 +159,10 @@ class PluginCostsTicket extends CommonDBTM
                     if ($item->canUpdate()) {
                         $ticket_id = $item->getID();
                         if ($ticket_id == 0) {
-                            $cost_config = new PluginCostsEntity();
+                            $cost_config = new PluginCostsfixEntity();
                             $cost_config->getFromDBByEntity($item->input['entities_id']);
                             if ($cost_config->fields['inheritance']) {
-                                $parent_id = PluginCostsEntity::getConfigID($item->fields['entities_id']);
+                                $parent_id = PluginCostsfixEntity::getConfigID($item->fields['entities_id']);
                                 $cost_config->getFromDB($parent_id);
                             }
                             $billable = $cost_config->fields['auto_cost'];
@@ -179,7 +179,7 @@ class PluginCostsTicket extends CommonDBTM
                             $input_class = 'col-xxl-7';
                         }
 
-                        $template = "@costs/billable_dropdown.html.twig";
+                        $template = "@costsfix/billable_dropdown.html.twig";
                         $template_options = [
                             'billable' => $billable,
                             'options'  => [
@@ -206,10 +206,10 @@ class PluginCostsTicket extends CommonDBTM
         if (array_key_exists('cost_billable', $ticket->input)) {
             $billable = $ticket->input['cost_billable'];
         } else {
-            $cost_config = new PluginCostsEntity();
+            $cost_config = new PluginCostsfixEntity();
             $cost_config->getFromDBByEntity($ticket->input['entities_id']);
             if ($cost_config->fields['inheritance']) {
-                $parent_id = PluginCostsEntity::getConfigID($ticket->input['entities_id']);
+                $parent_id = PluginCostsfixEntity::getConfigID($ticket->input['entities_id']);
                 $cost_config->getFromDB($parent_id);
             }
             $billable = $cost_config->fields['auto_cost'];
@@ -266,8 +266,8 @@ class PluginCostsTicket extends CommonDBTM
             $DB->query($query) or die($DB->error());
         } else {
             if ($DB->fieldExists($table, 'costs_id')) {
-                if (!$DB->tableExists('glpi_plugin_costs_tasks')) {
-                    PluginCostsTask::install($migration);
+                if (!$DB->tableExists('glpi_plugin_costsfix_tasks')) {
+                    PluginCostsfixTask::install($migration);
                 }
                 $query = [
                     'SELECT' => [
@@ -284,7 +284,7 @@ class PluginCostsTicket extends CommonDBTM
                         ]
                     ]
                 ];
-                $taskcost = new PluginCostsTask();
+                $taskcost = new PluginCostsfixTask();
                 foreach ($DB->request($query) as $id => $row) {
                     $arr = explode("_", $row['name']);
                     $task_id = $arr[0];

@@ -38,7 +38,7 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access directly to this file");
 }
 
-class PluginCostsEntity extends CommonDBTM
+class PluginCostsfixEntity extends CommonDBTM
 {
     public static $rightname = 'entity';
 
@@ -203,9 +203,9 @@ class PluginCostsEntity extends CommonDBTM
         echo $out;
 
         if ($inheritance != 1) {
-            PluginCostsEntity_Profile::showForEntity($entity);
+            PluginCostsfixEntity_Profile::showForEntity($entity);
         } else {
-            PluginCostsEntity_Profile::showForParent($cost_config->fields['entities_id']);
+            PluginCostsfixEntity_Profile::showForParent($cost_config->fields['entities_id']);
         }
 
         return false;

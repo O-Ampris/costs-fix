@@ -39,10 +39,10 @@ include('../../../inc/includes.php');
 Session::haveRight("entity", UPDATE);
 
 $Entity             = new Entity();
-$PluginCostsEntity  = new PluginCostsEntity();
+$PluginCostsfixEntity  = new PluginCostsfixEntity();
 
 if (isset($_POST["update"])) {
-    $PluginCostsEntity->update($_POST);
+    $PluginCostsfixEntity->update($_POST);
     Html::back();
 }
 

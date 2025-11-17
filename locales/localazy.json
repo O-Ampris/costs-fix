@@ -3,10 +3,10 @@
 		"type": "pot",
 		"deprecate": "project",
 		"files": [
-			"costs.pot",
+			"costsfix.pot",
 			{
 				"group": "existing",
-				"file": "costs.pot",
+				"file": "costsfix.pot",
 				"pattern": "./*.po",
 				"type": "po",
 				"lang": "${autodetectLang}"

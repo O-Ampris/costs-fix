@@ -40,7 +40,7 @@ include('../../../inc/includes.php');
 
 Session::checkLoginUser();
 
-$entity_profile = new PluginCostsEntity_Profile();
+$entity_profile = new PluginCostsfixEntity_Profile();
 if (isset($_POST["add"])) {
     if ($entity_profile->add($_POST)) {
         Event::log(

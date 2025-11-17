@@ -34,7 +34,7 @@
  * -------------------------------------------------------------------------
  */
 
-class PluginCostsTask extends CommonDBTM
+class PluginCostsfixTask extends CommonDBTM
 {
     public static $rightname = 'task';
 

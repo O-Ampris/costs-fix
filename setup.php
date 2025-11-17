@@ -36,73 +36,73 @@
 
 use Glpi\Plugin\Hooks;
 
-define('PLUGIN_COSTS_VERSION', '3.0.3');
+define('PLUGIN_COSTSFIX_VERSION', '3.0.3');
 // Minimal GLPI version, inclusive
-define("PLUGIN_COSTS_MIN_GLPI", "10.0");
+define("PLUGIN_COSTSFIX_MIN_GLPI", "10.0");
 // Maximum GLPI version, exclusive
-define("PLUGIN_COSTS_MAX_GLPI", "11.0");
+define("PLUGIN_COSTSFIX_MAX_GLPI", "11.0");
 
 global $CFG_GLPI;
-if (!defined('PLUGIN_COSTS_NUMBER_STEP')) {
-    define("PLUGIN_COSTS_NUMBER_STEP", 1 / pow(1, $CFG_GLPI["decimal_number"]));
+if (!defined('PLUGIN_COSTSFIX_NUMBER_STEP')) {
+    define("PLUGIN_COSTSFIX_NUMBER_STEP", 1 / pow(1, $CFG_GLPI["decimal_number"]));
 }
 
 /**
- * plugin_version_costs
+ * plugin_version_costsfix
  *
  * @return array
  */
-function plugin_version_costs(): array
+function plugin_version_costsfix(): array
 {
     return [
-        'name'          => 'Costs',
-        'version'       => PLUGIN_COSTS_VERSION,
+        'name'          => 'Costs Fix',
+        'version'       => PLUGIN_COSTSFIX_VERSION,
         'author'        => '<a href="https://github.com/O-Ampris">Ampris</a>',
-        'homepage'      => 'https://tic.gal/en/project/costs-control-plugin-glpi/',
+        'homepage'      => 'https://github.com/O-Ampris/costs-fix/',
         'license'       => 'GPLv3+',
         'requirements'  => [
             'glpi'  => [
-                'min'   => PLUGIN_COSTS_MIN_GLPI,
-                'max'   => PLUGIN_COSTS_MAX_GLPI,
+                'min'   => PLUGIN_COSTSFIX_MIN_GLPI,
+                'max'   => PLUGIN_COSTSFIX_MAX_GLPI,
             ]
         ]
     ];
 }
 
 /**
- * plugin_init_costs
+ * plugin_init_costsfix
  *
  * @return void
  */
-function plugin_init_costs(): void
+function plugin_init_costsfix(): void
 {
     global $PLUGIN_HOOKS;
 
     if (Session::haveRight('entity', UPDATE)) {
-        Plugin::registerClass('PluginCostsEntity', ['addtabon' => 'Entity']);
+        Plugin::registerClass('PluginCostsfixEntity', ['addtabon' => 'Entity']);
     }
 
     if (Session::haveRightsOr("config", [READ, UPDATE])) {
-        Plugin::registerClass('PluginCostsConfig', ['addtabon' => 'Config']);
+        Plugin::registerClass('PluginCostsfixConfig', ['addtabon' => 'Config']);
 
-        $PLUGIN_HOOKS['config_page']['costs'] = 'front/config.form.php';
+        $PLUGIN_HOOKS['config_page']['costsfix'] = 'front/config.form.php';
     }
 
-    $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT]['costs'] = true;
+    $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT]['costsfix'] = true;
 
-    $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['costs'] = ['PluginCostsTicket','postItemForm'];
+    $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['costsfix'] = ['PluginCostsfixTicket','postItemForm'];
 
-    $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['costs'] = [
-        Ticket::class       => ['PluginCostsTicket','ticketUpdate'],
-        TicketTask::class   => ['PluginCostsTask','preTaskUpdate']
+    $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['costsfix'] = [
+        Ticket::class       => ['PluginCostsfixTicket','ticketUpdate'],
+        TicketTask::class   => ['PluginCostsfixTask','preTaskUpdate']
     ];
 
-    $PLUGIN_HOOKS[Hooks::ITEM_ADD]['costs'] = [
-        Ticket::class       => ['PluginCostsTicket','ticketAdd'],
-        TicketTask::class   => ['PluginCostsTask','taskAdd']
+    $PLUGIN_HOOKS[Hooks::ITEM_ADD]['costsfix'] = [
+        Ticket::class       => ['PluginCostsfixTicket','ticketAdd'],
+        TicketTask::class   => ['PluginCostsfixTask','taskAdd']
     ];
 
-    $PLUGIN_HOOKS[Hooks::ITEM_PURGE]['costs'] = [
-        TicketTask::class   => ['PluginCostsTask','taskPurge']
+    $PLUGIN_HOOKS[Hooks::ITEM_PURGE]['costsfix'] = [
+        TicketTask::class   => ['PluginCostsfixTask','taskPurge']
     ];
 }

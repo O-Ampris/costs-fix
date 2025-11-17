@@ -1,8 +1,8 @@
 <root>
-   <name>Costsfix</name>
+   <name>Costs Fix - PLSS</name>
    <key>costsfix</key>
    <state>stable</state> <!-- stable | unstable | beta | alpha -->
-   <logo>https://raw.githubusercontent.com/O-Ampris/costs-fix/refs/heads/main/costsfix/assets/costsfix.png</logo>
+   <logo>https://raw.githubusercontent.com/O-Ampris/costsfix/refs/heads/main/costsfix/assets/costsfix.png</logo>
    <description>
       <short>
 		<en>Automatic costs generation for GLPI</en>
@@ -13,18 +13,18 @@
 		<es>El módulo Costs se alinea con tu organización generando los costes de las peticiones de manera automática, según la configuración de cada entidad.</es>
       </long>
    </description>
-   <homepage>https://github.com/O-Ampris/costs-fix/</homepage>
-   <download>https://github.com/O-Ampris/costs-fix/releases</download>
-   <issues>https://github.com/O-Ampris/costs-fix/issues</issues>
-   <readme>https://github.com/O-Ampris/costs-fix/blob/master/README.md</readme>
+   <homepage>https://github.com/O-Ampris/costsfix/</homepage>
+   <download>https://github.com/O-Ampris/costsfix/releases</download>
+   <issues>https://github.com/O-Ampris/costsfix/issues</issues>
+   <readme>https://github.com/O-Ampris/costsfix/blob/master/README.md</readme>
    <authors>
       <author>Ampris</author>
    </authors>
    <versions>
         <version>
             <num>3.0.3</num>
-            <compatibility>~10.0.0</compatibility>
-            <download_url>https://github.com/O-Ampris/costs-fix/releases/latest</download_url>
+            <compatibility>~11.0.0</compatibility>
+            <download_url>https://github.com/O-Ampris/costsfix/releases/latest</download_url>
         </version>
    </versions>
    <langs>

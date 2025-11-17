@@ -40,7 +40,7 @@ define('PLUGIN_COSTSFIX_VERSION', '3.0.3');
 // Minimal GLPI version, inclusive
 define("PLUGIN_COSTSFIX_MIN_GLPI", "10.0");
 // Maximum GLPI version, exclusive
-define("PLUGIN_COSTSFIX_MAX_GLPI", "11.0");
+// define("PLUGIN_COSTSFIX_MAX_GLPI", "12.0");
 
 global $CFG_GLPI;
 if (!defined('PLUGIN_COSTSFIX_NUMBER_STEP')) {
@@ -55,15 +55,15 @@ if (!defined('PLUGIN_COSTSFIX_NUMBER_STEP')) {
 function plugin_version_costsfix(): array
 {
     return [
-        'name'          => 'Costs Fix',
+        'name'          => 'Costs Fix - PLSS',
         'version'       => PLUGIN_COSTSFIX_VERSION,
         'author'        => '<a href="https://github.com/O-Ampris">Ampris</a>',
-        'homepage'      => 'https://github.com/O-Ampris/costs-fix/',
+        'homepage'      => 'https://github.com/O-Ampris/costsfix/',
         'license'       => 'GPLv3+',
         'requirements'  => [
             'glpi'  => [
                 'min'   => PLUGIN_COSTSFIX_MIN_GLPI,
-                'max'   => PLUGIN_COSTSFIX_MAX_GLPI,
+                // 'max'   => PLUGIN_COSTSFIX_MAX_GLPI,
             ]
         ]
     ];

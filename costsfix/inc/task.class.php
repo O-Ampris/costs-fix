@@ -102,6 +102,7 @@ class PluginCostsfixTask extends CommonDBTM
                             } else {
                                 $fullName = trim("$firstName $lastName");
                             }
+                            $comment = $fullName;
                             $cost = new TicketCost();
                             $cost_id = $cost->add([
                                 'tickets_id'    => $task->fields['tickets_id'],
@@ -211,6 +212,7 @@ class PluginCostsfixTask extends CommonDBTM
                                 } else {
                                     $fullName = trim("$firstName $lastName");
                                 }
+                                $comment = $fullName;
                                 $input = [
                                     'id'         => $cost_id,
                                     'name'       => $fullName,
@@ -243,6 +245,7 @@ class PluginCostsfixTask extends CommonDBTM
                             } else {
                                 $fullName = trim("$firstName $lastName");
                             }
+                            $comment = $fullName;
                             $input = [
                                 'tickets_id'    => $task->fields['tickets_id'],
                                 'name'          => $fullName,

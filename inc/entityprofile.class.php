@@ -2,56 +2,63 @@
 
 /**
  * -------------------------------------------------------------------------
- * Costs plugin for GLPI
- * Copyright (C) 2018-2024 by the TICgal Team.
+ * CostsFix plugin for GLPI
+ * Based on Costs plugin by TICGAL Team
+ * Customized for Pellissari by Ampris
  *
- * https://github.com/ticgal/costs
+ * https://github.com/O-Ampris/costsfix
  * -------------------------------------------------------------------------
  * LICENSE
  *
- * This file is part of the Costs plugin.
+ * This file is part of the CostsFix plugin.
  *
- * Costs plugin is free software; you can redistribute it and/or modify
+ * CostsFix plugin is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Costs plugin is distributed in the hope that it will be useful,
+ * CostsFix plugin is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Costs. If not, see <http://www.gnu.org/licenses/>.
+ * along with CostsFix. If not, see <http://www.gnu.org/licenses/>.
  * -------------------------------------------------------------------------
- * @package   Costs
- * @author    the TICgal team
- * @copyright Copyright (c) 2018-2024 TICgal team
+ * @package   CostsFix
+ * @author    Ampris (based on TICGAL team work)
+ * @copyright Copyright (C) 2024-2026 Ampris
  * @license   AGPL License 3.0 or (at your option) any later version
- *             http://www.gnu.org/licenses/agpl-3.0-standalone.html
- * @link      https://tic.gal
- * @since     2018
+ *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
+ * @link      https://github.com/O-Ampris/costsfix
+ * @since     2024
  * -------------------------------------------------------------------------
  */
 
-if (!defined('GLPI_ROOT')) {
-    die("Sorry. You can't access directly to this file");
-}
-
-class PluginCostsfixEntity_Profile extends CommonDBRelation
+class PluginCostsfixEntityProfile extends CommonDBRelation
 {
     public static $itemtype_1 = 'Entity';
     public static $items_id_1 = 'entities_id';
     public static $itemtype_2 = 'Profile';
     public static $items_id_2 = 'profiles_id';
 
+    public function getForbiddenStandardMassiveAction(): array
+    {
+        $forbidden   = parent::getForbiddenStandardMassiveAction();
+        $forbidden[] = 'update';
+        $forbidden[] = 'clone';
+        $forbidden[] = 'add_transfer_list';
+
+        return $forbidden;
+    }
+
     /**
      * showForEntity
      *
-     * @param  mixed $entity
-     * @return void
+     * @param  Entity $entity
+     * @return bool
      */
-    public static function showForEntity(Entity $entity): void
+    public static function showForEntity(Entity $entity): bool
     {
         $instID = $entity->fields['id'];
 
@@ -136,15 +143,17 @@ class PluginCostsfixEntity_Profile extends CommonDBRelation
             Html::closeForm();
         }
         echo "</div>";
+
+        return true;
     }
 
     /**
      * showForParent
      *
      * @param  mixed $entities_id
-     * @return void
+     * @return bool
      */
-    public static function showForParent($entities_id): void
+    public static function showForParent($entities_id): bool
     {
         echo "<div class='spaced'>";
         echo "<table class='tab_cadre_fixehov'>";
@@ -171,17 +180,20 @@ class PluginCostsfixEntity_Profile extends CommonDBRelation
         echo $header_begin . $header_bottom . $header_end;
         echo "</table>";
         echo "</div>";
+
+        return true;
     }
 
     /**
      * getUsedProfiles
      *
-     * @param  mixed $entities_id
-     * @param  mixed $only_id
+     * @param  int $entities_id
+     * @param  bool $only_id
      * @return array
      */
-    public static function getUsedProfiles($entities_id, $only_id = false): array
+    public static function getUsedProfiles(int $entities_id, bool $only_id = false): array
     {
+        /** @var \DBmysql $DB */
         global $DB;
 
         $profiles = [];
@@ -189,8 +201,8 @@ class PluginCostsfixEntity_Profile extends CommonDBRelation
         $query = [
             'FROM' => self::getTable(),
             'WHERE' => [
-                'entities_id' => $entities_id
-            ]
+                'entities_id' => $entities_id,
+            ],
         ];
         if ($only_id) {
             foreach ($DB->request($query) as $row) {
@@ -208,11 +220,12 @@ class PluginCostsfixEntity_Profile extends CommonDBRelation
     /**
      * install
      *
-     * @param  mixed $migration
+     * @param  Migration $migration
      * @return void
      */
     public static function install(Migration $migration): void
     {
+        /** @var \DBmysql $DB */
         global $DB;
 
         $default_charset    = DBConnection::getDefaultCharset();
@@ -230,19 +243,18 @@ class PluginCostsfixEntity_Profile extends CommonDBRelation
 				`time_cost` float NOT NULL default '0',
 				PRIMARY KEY (`id`),
 				UNIQUE KEY `unicity` (`entities_id`,`profiles_id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset}
-            COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
-            $DB->doQuery($query) or die($DB->error());
+            ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
+            $DB->doQuery($query);
         }
     }
 
     /**
-     * unistall
+     * uninstall
      *
-     * @param  mixed $migration
+     * @param  Migration $migration
      * @return void
      */
-    public static function unistall(Migration $migration): void
+    public static function uninstall(Migration $migration): void
     {
         $table = self::getTable();
         $migration->displayMessage("Uninstalling $table");

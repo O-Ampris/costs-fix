@@ -1,31 +1,31 @@
-# costs Glpi Plugin.
-# Copyright (C) 2024 TICgal
+# English translations for PACKAGE package.
+# Copyright (C) 2024 TICGAL
 # This file is distributed under the same license as the PACKAGE package.
-# TICgal, 2024
+# Automatically generated, 2024.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-02-05 15:14+0100\n"
-"PO-Revision-Date: 2024-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2024-02-05 15:14+0100\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: en_GB\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=ASCII\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: inc/entity.class.php:53 inc/task.class.php:49 inc/config.class.php:64
 #: inc/config.class.php:134 inc/ticket.class.php:51
 msgid "Costs"
-msgstr ""
+msgstr "Costs"
 
 #: inc/ticket.class.php:67 templates/billable_dropdown.html.twig:42
 msgid "Billable"
-msgstr ""
+msgstr "Billable"
 
 #: templates/config.html.twig:63
 msgid "Add task description on cost"
-msgstr ""
+msgstr "Add task description on cost"

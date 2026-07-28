@@ -2,35 +2,36 @@
 
 /**
  * -------------------------------------------------------------------------
- * Costs plugin for GLPI
- * Copyright (C) 2018-2024 by the TICgal Team.
+ * CostsFix plugin for GLPI
+ * Based on Costs plugin by TICGAL Team
+ * Customized for Pellissari by Ampris
  *
- * https://github.com/ticgal/costs
+ * https://github.com/O-Ampris/costsfix
  * -------------------------------------------------------------------------
  * LICENSE
  *
- * This file is part of the Costs plugin.
+ * This file is part of the CostsFix plugin.
  *
- * Costs plugin is free software; you can redistribute it and/or modify
+ * CostsFix plugin is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Costs plugin is distributed in the hope that it will be useful,
+ * CostsFix plugin is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Costs. If not, see <http://www.gnu.org/licenses/>.
+ * along with CostsFix. If not, see <http://www.gnu.org/licenses/>.
  * -------------------------------------------------------------------------
- * @package   Costs
- * @author    the TICgal team
- * @copyright Copyright (c) 2018-2024 TICgal team
+ * @package   CostsFix
+ * @author    Ampris (based on TICGAL team work)
+ * @copyright Copyright (C) 2024-2026 Ampris
  * @license   AGPL License 3.0 or (at your option) any later version
- *             http://www.gnu.org/licenses/agpl-3.0-standalone.html
- * @link      https://tic.gal
- * @since     2018
+ *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
+ * @link      https://github.com/O-Ampris/costsfix
+ * @since     2024
  * -------------------------------------------------------------------------
  */
 
@@ -41,14 +42,11 @@ class PluginCostsfixTicket extends CommonDBTM
     public static $rightname = 'ticket';
 
     /**
-     * getTypeName
-     *
-     * @param  mixed $nb
-     * @return string
+     * {@inheritdoc}
      */
     public static function getTypeName($nb = 0): string
     {
-        return __('Costs', 'Costs');
+        return __('CostsFix', 'costsfix');
     }
 
     /**
@@ -64,12 +62,12 @@ class PluginCostsfixTicket extends CommonDBTM
             'id'            => '1000',
             'table'         => self::getTable(),
             'field'         => 'billable',
-            'name'          => __("Billable", 'cost'),
+            'name'          => __("Billable", 'costsfix'),
             'datatype'      => 'bool',
             'searchtype'    => 'equals',
             'joinparams'    => [
-                'jointype'      => 'child'
-            ]
+                'jointype'      => 'child',
+            ],
         ];
 
         return $opt;
@@ -83,13 +81,14 @@ class PluginCostsfixTicket extends CommonDBTM
      */
     public static function deleteOldCosts($ID): void
     {
+        /** @var \DBmysql $DB */
         global $DB;
 
         $query = [
             'FROM' => self::getTable(),
             'WHERE' => [
                 'tickets_id' => $ID,
-            ]
+            ],
         ];
         foreach ($DB->request($query) as $id => $row) {
             $DB->delete('glpi_ticketcosts', ['id' => $row['costs_id']]);
@@ -100,10 +99,10 @@ class PluginCostsfixTicket extends CommonDBTM
     /**
      * isBillable
      *
-     * @param  mixed $ticket_id
-     * @return mixed
+     * @param  int $ticket_id
+     * @return bool
      */
-    public static function isBillable($ticket_id): mixed
+    public static function isBillable(int $ticket_id): bool
     {
         $cost_ticket = new self();
         $cost_ticket->getFromDBByTicket($ticket_id);
@@ -113,11 +112,12 @@ class PluginCostsfixTicket extends CommonDBTM
     /**
      * getFromDBByTicket
      *
-     * @param  mixed $ticket_id
+     * @param  int $ticket_id
      * @return bool
      */
-    public function getFromDBByTicket($ticket_id): bool
+    public function getFromDBByTicket(int $ticket_id): bool
     {
+        /** @var \DBmysql $DB */
         global $DB;
 
         $req = $DB->request(['FROM' => self::getTable(),'WHERE' => ['tickets_id' => $ticket_id]]);
@@ -137,7 +137,7 @@ class PluginCostsfixTicket extends CommonDBTM
             }
             $DB->insert(self::getTable(), [
                 'tickets_id'    => $ticket_id,
-                'billable'      => $cost_config->fields['auto_cost']
+                'billable'      => $cost_config->fields['auto_cost'],
             ]);
             $this->fields = ['billable' => $cost_config->fields['auto_cost']];
             return false;
@@ -152,44 +152,36 @@ class PluginCostsfixTicket extends CommonDBTM
      */
     public static function postItemForm($params = []): void
     {
-        if (Session::getCurrentInterface() != "helpdesk") {
-            $item = $params['item'];
-            if (!is_array($item)) {
-                if ($item->getType() == Ticket::getType()) {
-                    if ($item->canUpdate()) {
-                        $ticket_id = $item->getID();
-                        if ($ticket_id == 0) {
-                            $cost_config = new PluginCostsfixEntity();
-                            $cost_config->getFromDBByEntity($item->input['entities_id']);
-                            if ($cost_config->fields['inheritance']) {
-                                $parent_id = PluginCostsfixEntity::getConfigID($item->fields['entities_id']);
-                                $cost_config->getFromDB($parent_id);
-                            }
-                            $billable = $cost_config->fields['auto_cost'];
-                        } else {
-                            $cost_ticket = new self();
-                            $cost_ticket->getFromDBByTicket($ticket_id);
-                            $billable = $cost_ticket->fields['billable'];
-                        }
+        $interface = Session::getCurrentInterface();
+        if ($interface && $interface != "helpdesk") {
+            $item = $params['item'] ?? null;
+            if (!$item) {
+                return;
+            }
 
-                        $label_class = 'col-xxl-4';
-                        $input_class = 'col-xxl-8';
-                        if (version_compare(GLPI_VERSION, '10.0.10', '>=')) {
-                            $label_class = 'col-xxl-5';
-                            $input_class = 'col-xxl-7';
+            if ($item->getType() == Ticket::getType()) {
+                if ($item->canUpdate()) {
+                    $ticket_id = $item->getID();
+                    if ($ticket_id == 0) {
+                        $cost_config = new PluginCostsfixEntity();
+                        $cost_config->getFromDBByEntity($item->input['entities_id']);
+                        if ($cost_config->fields['inheritance']) {
+                            $parent_id = PluginCostsfixEntity::getConfigID($item->fields['entities_id']);
+                            $cost_config->getFromDB($parent_id);
                         }
-
-                        $template = "@costsfix/billable_dropdown.html.twig";
-                        $template_options = [
-                            'billable' => $billable,
-                            'options'  => [
-                                'field_class' => 'col-12',
-                                'label_class' => $label_class,
-                                'input_class' => $input_class,
-                            ]
-                        ];
-                        TemplateRenderer::getInstance()->display($template, $template_options);
+                        $billable = $cost_config->fields['auto_cost'];
+                    } else {
+                        $cost_ticket = new self();
+                        $cost_ticket->getFromDBByTicket($ticket_id);
+                        $billable = $cost_ticket->fields['billable'];
                     }
+
+
+                    $template = "@costsfix/billable_dropdown.html.twig";
+                    $template_options = [
+                        'billable' => $billable,
+                    ];
+                    TemplateRenderer::getInstance()->display($template, $template_options);
                 }
             }
         }
@@ -198,7 +190,7 @@ class PluginCostsfixTicket extends CommonDBTM
     /**
      * ticketAdd
      *
-     * @param  mixed $ticket
+     * @param  Ticket $ticket
      * @return void
      */
     public static function ticketAdd(Ticket $ticket): void
@@ -221,29 +213,31 @@ class PluginCostsfixTicket extends CommonDBTM
     /**
      * ticketUpdate
      *
-     * @param  mixed $ticket
+     * @param  Ticket $ticket
      * @return void
      */
     public static function ticketUpdate(Ticket $ticket): void
     {
-        if (array_key_exists('cost_billable', $ticket->input)) {
+        if (is_array($ticket->input) && array_key_exists('cost_billable', $ticket->input)) {
             $cost_ticket = new self();
-            $cost_ticket->getFromDBByTicket($ticket->fields['id']);
-            $cost_ticket->update([
-                'billable'  => $ticket->input['cost_billable'],
-                'id'        => $cost_ticket->getID()
-            ]);
+            if ($cost_ticket->getFromDBByTicket($ticket->fields['id'])) {
+                $cost_ticket->update([
+                    'billable'  => $ticket->input['cost_billable'],
+                    'id'        => $cost_ticket->getID(),
+                ]);
+            }
         }
     }
 
     /**
      * install
      *
-     * @param  mixed $migration
+     * @param  Migration $migration
      * @return void
      */
     public static function install(Migration $migration): void
     {
+        /** @var \DBmysql $DB */
         global $DB;
 
         $default_charset = DBConnection::getDefaultCharset();
@@ -256,14 +250,14 @@ class PluginCostsfixTicket extends CommonDBTM
             $migration->displayMessage("Installing $table");
 
             $query = "CREATE TABLE IF NOT EXISTS `$table` (
-                    `id` int {$default_key_sign} NOT NULL auto_increment,
-                    `tickets_id` int {$default_key_sign} NOT NULL,
-                    `billable` tinyint NOT NULL DEFAULT '0',
-                    PRIMARY KEY (`id`),
-                    KEY `tickets_id` (`tickets_id`),
-                    KEY `billable` (`billable`)
-                ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
-            $DB->doQuery($query) or die($DB->error());
+                `id` int {$default_key_sign} NOT NULL auto_increment,
+                `tickets_id` int {$default_key_sign} NOT NULL,
+                `billable` tinyint NOT NULL DEFAULT '0',
+                PRIMARY KEY (`id`),
+                KEY `tickets_id` (`tickets_id`),
+                KEY `billable` (`billable`)
+            ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
+            $DB->doQuery($query);
         } else {
             if ($DB->fieldExists($table, 'costs_id')) {
                 if (!$DB->tableExists('glpi_plugin_costsfix_tasks')) {
@@ -279,10 +273,10 @@ class PluginCostsfixTicket extends CommonDBTM
                         'glpi_ticketcosts' => [
                             'FKEY' => [
                                 'glpi_ticketcosts'  => 'id',
-                                $table              => 'costs_id'
-                            ]
-                        ]
-                    ]
+                                $table              => 'costs_id',
+                            ],
+                        ],
+                    ],
                 ];
                 $taskcost = new PluginCostsfixTask();
                 foreach ($DB->request($query) as $id => $row) {

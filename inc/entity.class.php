@@ -2,104 +2,92 @@
 
 /**
  * -------------------------------------------------------------------------
- * Costs plugin for GLPI
- * Copyright (C) 2018-2024 by the TICgal Team.
+ * CostsFix plugin for GLPI
+ * Based on Costs plugin by TICGAL Team
+ * Customized for Pellissari by Ampris
  *
- * https://github.com/ticgal/costs
+ * https://github.com/O-Ampris/costsfix
  * -------------------------------------------------------------------------
  * LICENSE
  *
- * This file is part of the Costs plugin.
+ * This file is part of the CostsFix plugin.
  *
- * Costs plugin is free software; you can redistribute it and/or modify
+ * CostsFix plugin is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Costs plugin is distributed in the hope that it will be useful,
+ * CostsFix plugin is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Costs. If not, see <http://www.gnu.org/licenses/>.
+ * along with CostsFix. If not, see <http://www.gnu.org/licenses/>.
  * -------------------------------------------------------------------------
- * @package   Costs
- * @author    the TICgal team
- * @copyright Copyright (c) 2018-2024 TICgal team
+ * @package   CostsFix
+ * @author    Ampris (based on TICGAL team work)
+ * @copyright Copyright (C) 2024-2026 Ampris
  * @license   AGPL License 3.0 or (at your option) any later version
- *             http://www.gnu.org/licenses/agpl-3.0-standalone.html
- * @link      https://tic.gal
- * @since     2018
+ *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
+ * @link      https://github.com/O-Ampris/costsfix
+ * @since     2024
  * -------------------------------------------------------------------------
  */
-
-if (!defined('GLPI_ROOT')) {
-    die("Sorry. You can't access directly to this file");
-}
 
 class PluginCostsfixEntity extends CommonDBTM
 {
     public static $rightname = 'entity';
 
     /**
-     * getTypeName
-     *
-     * @param  mixed $nb
-     * @return string
+     * {@inheritdoc}
      */
     public static function getTypeName($nb = 0): string
     {
-        return __('Costs', 'Costs');
+        return __('CostsFix', 'costsfix');
     }
 
     /**
-     * getTabNameForItem
-     *
-     * @param  mixed $item
-     * @param  mixed $withtemplate
-     * @return string
+     * {@inheritdoc}
      */
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0): string
     {
         switch ($item::getType()) {
             case Entity::getType():
-                return self::getTypeName();
-            break;
+                return self::createTabEntry(self::getTypeName());
         }
         return '';
     }
 
     /**
-     * displayTabContentForItem
-     *
-     * @param  mixed $item
-     * @param  mixed $tabnum
-     * @param  mixed $withtemplate
-     * @return bool
+     * {@inheritdoc}
      */
     public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0): bool
     {
         switch ($item::getType()) {
             case Entity::getType():
-                self::displayTabForEntity($item);
-                break;
+                if ($item instanceof Entity) {
+                    return self::displayTabForEntity($item);
+                }
+                return false;
         }
 
-        return true;
+        return false;
     }
 
     /**
      * getFromDBByEntity
      *
-     * @param  mixed $entities_id
+     * @param  int $entities_id
      * @return bool
      */
-    public function getFromDBByEntity($entities_id): bool
+    public function getFromDBByEntity(int $entities_id): bool
     {
+        /** @var \DBmysql $DB */
         global $DB;
 
-        $req = $DB->request(['FROM' => self::getTable(),'WHERE' => ['entities_id' => $entities_id]]);
+        $req = $DB->request(['FROM' => self::getTable(), 'WHERE' => ['entities_id' => $entities_id]]);
+
         if (count($req)) {
             foreach ($req as $result) {
                 $this->fields = $result;
@@ -107,7 +95,7 @@ class PluginCostsfixEntity extends CommonDBTM
             return true;
         } else {
             if ($entities_id > 0) {
-                $id = $this->add(['entities_id' => $entities_id,'inheritance' => 1]);
+                $id = $this->add(['entities_id' => $entities_id, 'inheritance' => 1]);
             } else {
                 $id = $this->add(['entities_id' => $entities_id]);
             }
@@ -119,7 +107,7 @@ class PluginCostsfixEntity extends CommonDBTM
     /**
      * displayTabForEntity
      *
-     * @param  mixed $entity
+     * @param  Entity $entity
      * @return bool
      */
     public static function displayTabForEntity(Entity $entity): bool
@@ -141,7 +129,7 @@ class PluginCostsfixEntity extends CommonDBTM
         if ($ID > 0) {
             $out .= "<tr class='tab_bg_1'>";
             $out .= "<td style='width: 400px;'>" . __('Inheritance of the parent entity') . "</td><td>";
-            $out .= Dropdown::showYesNo("inheritance", $cost_config->fields['inheritance'], -1, ['display' => false,'use_checkbox' => true]);
+            $out .= Dropdown::showYesNo("inheritance", $cost_config->fields['inheritance'], -1, ['display' => false, 'use_checkbox' => true]);
             $out .= "</td></tr>\n";
         }
 
@@ -194,7 +182,7 @@ class PluginCostsfixEntity extends CommonDBTM
         $out .= "</td></tr>\n";
 
         $out .= "<tr><td class='tab_bg_2 right'>";
-        $out .= "<input type='submit' name='update' value='" . _sx('button', 'Update') . "' class='submit'>";
+        $out .= "<input type='submit' name='plugin_costsfix_update' value='" . _sx('button', 'Update') . "' class='submit'>";
         $out .= "<input type='hidden' name='id' value='" . $config_id . "'>";
         $out .= "</td></tr>";
         $out .= "</table>";
@@ -203,43 +191,49 @@ class PluginCostsfixEntity extends CommonDBTM
         echo $out;
 
         if ($inheritance != 1) {
-            PluginCostsfixEntity_Profile::showForEntity($entity);
+            PluginCostsfixEntityProfile::showForEntity($entity);
         } else {
-            PluginCostsfixEntity_Profile::showForParent($cost_config->fields['entities_id']);
+            PluginCostsfixEntityProfile::showForParent($cost_config->fields['entities_id']);
         }
 
-        return false;
+        return true;
     }
 
     /**
      * getConfigID
      *
-     * @param  mixed $entities_id
-     * @return mixed
+     * @param  int $entities_id
+     * @return int
      */
-    public static function getConfigID($entities_id): mixed
+    public static function getConfigID(int $entities_id): int
     {
-
         $config = new self();
         $config->getFromDBByEntity($entities_id);
+
         if ($config->fields['inheritance']) {
             $entity = new Entity();
-            if ($entity->getFromDB($entities_id)) {
+            if ($entity->getFromDB($entities_id) && $entity->fields['entities_id'] != $entities_id) {
                 return self::getConfigID($entity->fields['entities_id']);
             }
-        } else {
-            return $config->fields['id'];
         }
+
+        return $config->fields['id'] ?? 0;
+    }
+
+    public static function getIcon(): string
+    {
+        return PLUGIN_COSTSFIX_ICON;
     }
 
     /**
      * install
      *
-     * @param  mixed $migration
+     * @param  Migration $migration
      * @return void
      */
     public static function install(Migration $migration): void
     {
+        /** @var \DBmysql $DB */
         global $DB;
 
         $default_charset = DBConnection::getDefaultCharset();
@@ -261,9 +255,8 @@ class PluginCostsfixEntity extends CommonDBTM
                 `inheritance` tinyint NOT NULL DEFAULT '0',
                 PRIMARY KEY (id),
                 KEY entities_id (entities_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset}
-            COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
-            $DB->doQuery($query) or die($DB->error());
+            ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
+            $DB->doQuery($query);
         } else {
             if (!$DB->fieldExists($table, 'auto_cost')) {
                 $migration->displayMessage("Upgrading $table");
@@ -280,12 +273,12 @@ class PluginCostsfixEntity extends CommonDBTM
     }
 
     /**
-     * unistall
+     * uninstall
      *
-     * @param  mixed $migration
+     * @param  Migration $migration
      * @return void
      */
-    public static function unistall(Migration $migration): void
+    public static function uninstall(Migration $migration): void
     {
         $table = self::getTable();
         $migration->displayMessage("Uninstalling $table");

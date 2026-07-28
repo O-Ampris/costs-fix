@@ -9,30 +9,42 @@ on:
 permissions:
   contents: write
 
+env:
+  PLUGIN_NAME: costsfix
+
 jobs:
   build-release:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar código
+      - name: Baixar codigo
         uses: actions/checkout@v4
 
-      - name: Definir versão da release
+      - name: Definir versao da release
         id: vars
         run: |
-          VERSION=$(date +"%Y.%m.%d-%H%M")
+          VERSION=$(grep -oP "\S*'PLUGIN_\w*_VERSION'\,\s*'\K[^']+" setup.php)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Criar tar.gz da pasta prometheus
+      - name: Criar tar.gz do repositorio (ignorando .github/.git)
         run: |
-          tar -czvf costsfix-glpi-plugin.tar.gz costsfix
+          TAR_PATH="/tmp/${{ env.PLUGIN_NAME }}.tar.gz"
+
+          tar -czf "$TAR_PATH" \
+            --exclude=.github \
+            --exclude=.git \
+            --exclude="${{ env.PLUGIN_NAME }}.tar.gz" \
+            --transform "s|^|${{ env.PLUGIN_NAME }}/|" \
+            .
+
+          mv "$TAR_PATH" "./${{ env.PLUGIN_NAME }}.tar.gz"
 
       - name: Criar Release no GitHub
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.vars.outputs.version }}
-          name: "GLPI Plugin Costsfix ${{ steps.vars.outputs.version }}"
+          name: "${{ steps.vars.outputs.version }}"
           files: |
-            costsfix-glpi-plugin.tar.gz
+            ${{ env.PLUGIN_NAME }}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

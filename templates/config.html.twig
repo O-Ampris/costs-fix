@@ -1,0 +1,65 @@
+{#
+# -------------------------------------------------------------------------
+# CostsFix plugin for GLPI
+# Based on Costs plugin by TICGAL Team
+# Customized for Pellissari by Ampris
+#
+# https://github.com/O-Ampris/costsfix
+# -------------------------------------------------------------------------
+# LICENSE
+#
+# This file is part of the CostsFix plugin.
+#
+# CostsFix plugin is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# CostsFix plugin is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CostsFix. If not, see <http://www.gnu.org/licenses/>.
+# -------------------------------------------------------------------------
+# @package   CostsFix
+# @author    Ampris (based on TICGAL team work)
+# @copyright Copyright (C) 2024-2026 Ampris
+# @license   AGPL License 3.0 or (at your option) any later version
+#            http://www.gnu.org/licenses/agpl-3.0-standalone.html
+# @link      https://github.com/O-Ampris/costsfix
+# @since     2024
+# -------------------------------------------------------------------------
+#}
+{% import 'components/form/fields_macros.html.twig' as fields %}
+{% import 'components/form/buttons.html.twig' as buttons %}
+
+{% set no_header = no_header|default(not item.isNewItem() and not _get._in_modal|default(false)) %}
+{% set bg = '' %}
+{% if item.isDeleted() %}
+{% set bg = 'asset-deleted' %}
+{% endif %}
+
+<div class="asset {{ bg }}">
+    {{ include('components/form/header.html.twig', {'in_twig': true, 'no_header': true}) }}
+    {% set params = params ?? [] %}
+    <h3 class="card-title d-flex align-items-center ps-0">{{ __("Add Task Description on Cost", "costsfix") }}</h3>
+
+    <div class="row">
+        <div class="row ps-4">
+
+        {{ fields.dropdownYesNo(
+            'taskdescription',
+            item.fields['taskdescription'],
+            __("Add task description on cost", "costsfix"),
+            options|merge(({
+                'field_class': 'col-12 glpi-full-width',
+                'use_checkbox': 'true',
+            }))
+        ) }}
+
+        </div>
+    </div>
+    {{ include('components/form/buttons.html.twig') }}
+</div>

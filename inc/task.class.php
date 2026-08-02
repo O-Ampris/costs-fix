@@ -51,7 +51,7 @@ class PluginCostsfixTask extends CommonDBTM
 
     /**
      * Build cost name with profile and user full name
-     * Format: [ProfileName] Firstname Lastname
+     * Format: Firstname Lastname
      *
      * @param  User $user
      * @param  int  $task_id
@@ -70,17 +70,6 @@ class PluginCostsfixTask extends CommonDBTM
             $fullName = trim("$firstName $lastName");
         }
 
-        // Get profile name
-        $profileName = '';
-        if (!empty($user->fields['profiles_id'])) {
-            $profileName = Dropdown::getDropdownName("glpi_profiles", $user->fields['profiles_id']);
-        }
-
-        // Format: [ProfileName] Firstname Lastname
-        if (!empty($profileName) && $profileName !== '&nbsp;') {
-            return "[$profileName] $fullName";
-        }
-
         return $fullName;
     }
 
@@ -95,6 +84,36 @@ class PluginCostsfixTask extends CommonDBTM
     private static function calculateCostTime(int $actiontime): float
     {
         return $actiontime / 60;
+    }
+
+    /**
+     * Resolve the cost dates from the task date
+     *
+     * Pellissari bills per day, so both begin_date and end_date receive the day
+     * of the task 'date' field, whatever planning the task may have.
+     * glpi_ticketcosts.begin_date/end_date are DATE columns, so the time part is
+     * dropped. Returns an empty array when the task has no date, letting the
+     * caller leave the cost dates untouched.
+     *
+     * @param  TicketTask $task
+     * @return array
+     */
+    private static function costDatesFromTask(TicketTask $task): array
+    {
+        if (is_array($task->input) && !empty($task->input['date'])) {
+            $date = $task->input['date'];
+        } elseif (!empty($task->fields['date'])) {
+            $date = $task->fields['date'];
+        } else {
+            return [];
+        }
+
+        $day = substr($date, 0, 10);
+        if ($day == '0000-00-00') {
+            return [];
+        }
+
+        return ['begin_date' => $day,'end_date' => $day];
     }
 
     /**
@@ -152,17 +171,15 @@ class PluginCostsfixTask extends CommonDBTM
                             $calculatedCostTime = self::calculateCostTime($task->fields['actiontime']);
 
                             $cost = new TicketCost();
-                            $cost_id = $cost->add([
+                            $cost_id = $cost->add(array_merge([
                                 'tickets_id'    => $task->fields['tickets_id'],
                                 'name'          => $costName,
                                 'comment'       => $comment,
-                                'begin_date'    => (array_key_exists('begin', $task->fields)) ? $task->fields['begin'] : null,
-                                'end_date'      => (array_key_exists('end', $task->fields)) ? $task->fields['end'] : null,
                                 'actiontime'    => $task->fields['actiontime'],
                                 'cost_time'     => $calculatedCostTime,
                                 'cost_fixed'    => $cost_fixed,
                                 'entities_id'   => $ticket->fields['entities_id'],
-                            ]);
+                            ], self::costDatesFromTask($task)));
 
                             $taskcost = new self();
                             $taskcost->add(['tasks_id' => $task->fields['id'],'costs_id' => $cost_id]);
@@ -264,19 +281,13 @@ class PluginCostsfixTask extends CommonDBTM
                                     $comment = $costName;
                                 }
 
-                                $input = [
+                                $input = array_merge([
                                     'id'         => $cost_id,
                                     'name'       => $costName,
                                     'comment'    => $comment,
                                     'actiontime' => $actiontime,
                                     'cost_time'  => $calculatedCostTime,
-                                ];
-                                if (array_key_exists('begin', $task->input)) {
-                                    $input['begin_date'] = $task->input['begin'];
-                                }
-                                if (array_key_exists('end', $task->input)) {
-                                    $input['end_date'] = $task->input['end'];
-                                }
+                                ], self::costDatesFromTask($task));
 
                                 $cost = new TicketCost();
                                 $cost->update($input);
@@ -290,7 +301,7 @@ class PluginCostsfixTask extends CommonDBTM
                             }
 
                             $cost = new TicketCost();
-                            $input = [
+                            $input = array_merge([
                                 'tickets_id'    => $task->fields['tickets_id'],
                                 'name'          => $costName,
                                 'comment'       => $comment,
@@ -298,17 +309,7 @@ class PluginCostsfixTask extends CommonDBTM
                                 'cost_time'     => $calculatedCostTime,
                                 'cost_fixed'    => $cost_fixed,
                                 'entities_id'   => $ticket->fields['entities_id'],
-                            ];
-                            if (array_key_exists('begin', $task->input)) {
-                                $input['begin_date'] = $task->input['begin'];
-                            } else {
-                                $input['begin_date'] = $task->fields['begin'];
-                            }
-                            if (array_key_exists('end', $task->input)) {
-                                $input['end_date'] = $task->input['end'];
-                            } else {
-                                $input['end_date'] = $task->fields['end'];
-                            }
+                            ], self::costDatesFromTask($task));
                             $cost_id = $cost->add($input);
 
                             $taskcost = new self();
